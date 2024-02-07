@@ -43,17 +43,23 @@ public class ServerApp {
                 DataOutputStream dos = new DataOutputStream(os);
 
                 while (true) {
-                    System.out.println("Receieved command from client.");
+                    System.out.println("Recieved command from client.");
                     try {
                         String dataFromClient = dis.readUTF();
+
                         if (dataFromClient.equals("get-cookie")) {
                             String cookieName = Cookie.getRandomCookie(cookieFile);
-                            dos.writeUTF("cookie-text_" + cookieName);
+                            dos.writeUTF("cookie-text_" + cookieName); //Server sent to Client
+
                         } if (dataFromClient.equals("close")) {
+                            System.out.println("Client requested to close connection.");
+                            dos.writeUTF("Goodbye!"); //Server sent to Client
                             socket.close();
+                            break;
                         } else {
-                            dos.writeUTF("Invalid command, please try again");
+                            dos.writeUTF("Invalid command, please try again"); //Server sent to Client
                         }
+                        dos.flush();
                     } catch (EOFException e) {
                         System.out.println("Client disconnected");
                         socket.close();

@@ -28,8 +28,14 @@ public class ClientApp {
                 Console console = System.console();
 
                 String input = console.readLine("Client command to the server: ");
-
-                dos.writeUTF(input);
+                if(input.equals("end")){
+                    is.close();
+                    os.close();
+                    socket.close();
+                    System.exit(1);
+                }
+                    
+                dos.writeUTF(input); //Client send to Server
                 dos.flush();
 
                 String response = dis.readUTF();

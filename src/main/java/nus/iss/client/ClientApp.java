@@ -15,15 +15,13 @@ public class ClientApp {
         System.out.println("Client");
         String[] connectionInfo = args[0].split(":");
         System.out.println(connectionInfo[0] + " " + connectionInfo[1]);
-        InputStream is;
-        // OutputStream os;
 
         try {
             while (true) {
                 Socket socket = new Socket(connectionInfo[0], Integer.parseInt(connectionInfo[1]));
-                is = socket.getInputStream();
-
+                InputStream is = socket.getInputStream();
                 DataInputStream dis = new DataInputStream(is);
+
                 OutputStream os = socket.getOutputStream();
                 DataOutputStream dos = new DataOutputStream(os);
 
@@ -37,7 +35,7 @@ public class ClientApp {
                 String response = dis.readUTF();
 
                 if (response.contains("cookie-text_")) {
-                    String[] arrRes = response.split(" ");
+                    String[] arrRes = response.split("_");
                     System.out.println("Cookie from server: " + arrRes[1]);
                 } else {
                     System.err.println(response);
@@ -53,9 +51,6 @@ public class ClientApp {
             e.printStackTrace();
         } catch (NumberFormatException | IOException e) {
             e.printStackTrace();
-
-        } finally {
-            // is.close();
         }
 
     }

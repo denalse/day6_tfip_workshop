@@ -2,8 +2,8 @@ package nus.iss.client;
 
 import java.io.Console;
 import java.io.DataInputStream;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,50 +12,62 @@ import java.rmi.UnknownHostException;
 
 public class ClientApp {
     public static void main(String[] args) {
-        System.out.println("Client");
-        String[] connectionInfo = args[0].split(":");
-        System.out.println(connectionInfo[0] + " " + connectionInfo[1]);
+
+        System.out.println("Cookie Client");
+        String[] arr = args[0].split(":");
+        boolean stop = false;
+        InputStream is = null;
+        DataInputStream dis = null;
+        Socket sock = null;
+        OutputStream os = null;
 
         try {
-            while (true) {
-                Socket socket = new Socket(connectionInfo[0], Integer.parseInt(connectionInfo[1]));
-                InputStream is = socket.getInputStream();
-                DataInputStream dis = new DataInputStream(is);
-
-                OutputStream os = socket.getOutputStream();
+            Console cons = System.console();
+            while (!stop) {
+                String response = null;
+                String input = cons.readLine("Send command to server > ");
+                sock = new Socket(arr[0], Integer.parseInt(arr[1]));
+                is = sock.getInputStream();
+                dis = new DataInputStream(is);
+                os = sock.getOutputStream();
                 DataOutputStream dos = new DataOutputStream(os);
 
-                Console console = System.console();
-
-                String input = console.readLine("Client command to the server: ");
-                if(input.equals("end")){
-                    is.close();
-                    os.close();
-                    socket.close();
-                    System.exit(1);
-                }
-                    
-                dos.writeUTF(input); //Client send to Server
+                if (input.equals("exit"))
+                    stop = true;
+                dos.writeUTF(input);
                 dos.flush();
 
-                String response = dis.readUTF();
+                if (!stop) {
+                    try {
+                        response = dis.readUTF();
+                    } catch (EOFException e) {
+                        // suppress if the reading is called twice.
+                    }
 
-                if (response.contains("cookie-text_")) {
-                    String[] arrRes = response.split("_");
-                    System.out.println("Cookie from server: " + arrRes[1]);
-                } else {
-                    System.err.println(response);
+                    if (response != null) {
+                        if (response.contains("cookie-text") || response.contains("error,")) {
+                            System.out.println(response);
+                            String[] cookieValue = response.split(",");
+                            if (response.contains("error,")) {
+                                System.out.printf("Error from server >> %s\n", cookieValue[1]);
+                            }
+                            if (response.contains("cookie-text,")) {
+                                System.out.printf("Cookie from server >> %s\n", cookieValue[1]);
+                            }
+                        }
+                    }
                 }
-
-                is.close();
-                os.close();
-                socket.close();
-
             }
+            System.out.println("closing ..");
+            is.close();
+            os.close();
+            sock.close();
 
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         } catch (UnknownHostException e) {
             e.printStackTrace();
-        } catch (NumberFormatException | IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

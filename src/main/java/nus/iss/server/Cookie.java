@@ -1,46 +1,35 @@
 package nus.iss.server;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 public class Cookie {
 
-    public static String getRandomCookie(String cookieFilePath) {
-        String randomCookie = "No cookie for you !";
-
+    public static String getRandomCookie(String path) {
+        File cookieFile = new File(path);
         List<String> cookies = new LinkedList<>();
-
+        String randomCookie = "";
+        Scanner scanner;
         try {
-            cookies = getDataFromCookieFile(cookieFilePath);
-
-            Random r = new Random();
-            int cookieSize = cookies.size();
-            if (cookieSize > 0) {
-                int index = r.nextInt(cookieSize);
-                randomCookie = cookies.get(index);
+            scanner = new Scanner(cookieFile);
+            while (scanner.hasNextLine()) {
+                cookies.add(scanner.nextLine());
             }
-            System.out.println(randomCookie);
+            scanner.close();
 
-        } catch (IOException e) {
+            System.out.println(cookies);
+            Random rand = new Random();
+            randomCookie = cookies.get(rand.nextInt(cookies.size()));
+            System.out.println(randomCookie);
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
         return randomCookie;
-    }
-
-    private static List<String> getDataFromCookieFile(String cookieFilePath) throws IOException {
-
-        BufferedReader br = new BufferedReader(new FileReader(cookieFilePath));
-        List<String> cookies = new LinkedList<>();
-        String line;
-
-        while ((line = br.readLine()) != null) {
-            cookies.add(line);
-        }
-        return cookies;
     }
 
 }
